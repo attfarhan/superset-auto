@@ -16,14 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import type { CSSProperties } from 'react';
 import getOwnerName from 'src/utils/getOwnerName';
 import { t } from '@apache-superset/core/translation';
 import { Tooltip } from '@superset-ui/core/components';
 import type { AuditInfoProps } from './types';
 
+const dateSpanStyle: CSSProperties = {
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  maxWidth: '100%',
+  display: 'inline-block',
+};
+
 export const ModifiedInfo = ({ user, date }: AuditInfoProps) => {
   const dateSpan = (
-    <span className="no-wrap" data-test="audit-info-date">
+    <span style={dateSpanStyle} data-test="audit-info-date">
       {date}
     </span>
   );
@@ -37,12 +46,16 @@ export const ModifiedInfo = ({ user, date }: AuditInfoProps) => {
       </Tooltip>
     );
   }
-  return dateSpan;
+  return (
+    <Tooltip title={date} placement="bottom">
+      {dateSpan}
+    </Tooltip>
+  );
 };
 
 export const CreatedInfo = ({ user, date }: AuditInfoProps) => {
   const dateSpan = (
-    <span className="no-wrap" data-test="audit-info-date">
+    <span style={dateSpanStyle} data-test="audit-info-date">
       {date}
     </span>
   );
@@ -56,7 +69,11 @@ export const CreatedInfo = ({ user, date }: AuditInfoProps) => {
       </Tooltip>
     );
   }
-  return dateSpan;
+  return (
+    <Tooltip title={date} placement="bottom">
+      {dateSpan}
+    </Tooltip>
+  );
 };
 
 export type { AuditInfoProps };

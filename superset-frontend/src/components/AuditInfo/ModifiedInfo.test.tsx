@@ -16,12 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import {
-  render,
-  screen,
-  userEvent,
-  waitFor,
-} from 'spec/helpers/testing-library';
+import { render, screen, userEvent } from 'spec/helpers/testing-library';
 
 import { ModifiedInfo } from '.';
 
@@ -45,18 +40,26 @@ test('should render a tooltip when user is provided', async () => {
   expect(screen.getByText('Modified by: Foo Bar')).toBeInTheDocument();
 });
 
-test('should render only the date if username is not provided', async () => {
+test('should render only the date with a tooltip if username is not provided', async () => {
   render(<ModifiedInfo date={TEST_DATE} />);
 
   const dateElement = screen.getByTestId('audit-info-date');
   expect(dateElement).toBeInTheDocument();
   expect(screen.getByText(TEST_DATE)).toBeInTheDocument();
   await userEvent.hover(dateElement);
-  await waitFor(
-    () => {
-      const tooltip = screen.queryByRole('tooltip');
-      expect(tooltip).not.toBeInTheDocument();
-    },
-    { timeout: 1000 },
-  );
+  const tooltip = await screen.findByRole('tooltip');
+  expect(tooltip).toBeInTheDocument();
+  expect(tooltip).toHaveTextContent(TEST_DATE);
+});
+
+test('should apply overflow styles to the date span', () => {
+  render(<ModifiedInfo user={USER} date={TEST_DATE} />);
+
+  const dateElement = screen.getByTestId('audit-info-date');
+  expect(dateElement).toHaveStyle({
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '100%',
+  });
 });
