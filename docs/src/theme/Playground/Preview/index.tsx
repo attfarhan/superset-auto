@@ -20,7 +20,10 @@
 import React, { type ReactNode } from 'react';
 import { LiveError, LivePreview } from 'react-live';
 import BrowserOnly from '@docusaurus/BrowserOnly';
-import { ErrorBoundaryErrorMessageFallback } from '@docusaurus/theme-common';
+import {
+  ErrorBoundaryErrorMessageFallback,
+  useColorMode,
+} from '@docusaurus/theme-common';
 import ErrorBoundary from '@docusaurus/ErrorBoundary';
 import Translate from '@docusaurus/Translate';
 import PlaygroundHeader from '@theme/Playground/Header';
@@ -37,17 +40,29 @@ function getThemeWrapper() {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { themeObject } = require('@apache-superset/core/theme');
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { App } = require('antd');
+    const { App, ConfigProvider, theme: antdTheme } = require('antd');
 
     if (!themeObject?.SupersetThemeProvider) {
       return ({ children }: { children: React.ReactNode }) => <>{children}</>;
     }
 
-    return ({ children }: { children: React.ReactNode }) => (
-      <themeObject.SupersetThemeProvider>
-        <App>{children}</App>
-      </themeObject.SupersetThemeProvider>
-    );
+    return ({ children }: { children: React.ReactNode }) => {
+      const { colorMode } = useColorMode();
+      const isDark = colorMode === 'dark';
+      return (
+        <themeObject.SupersetThemeProvider>
+          <ConfigProvider
+            theme={{
+              algorithm: isDark
+                ? antdTheme.darkAlgorithm
+                : antdTheme.defaultAlgorithm,
+            }}
+          >
+            <App>{children}</App>
+          </ConfigProvider>
+        </themeObject.SupersetThemeProvider>
+      );
+    };
   } catch (e) {
     console.error('[PlaygroundPreview] Failed to load theme provider:', e);
     return ({ children }: { children: React.ReactNode }) => <>{children}</>;
@@ -75,7 +90,7 @@ function PlaygroundLivePreview(): ReactNode {
       {() => (
         <>
           <ErrorBoundary
-            fallback={(params) => (
+            fallback={params => (
               <ErrorBoundaryErrorMessageFallback {...params} />
             )}
           >

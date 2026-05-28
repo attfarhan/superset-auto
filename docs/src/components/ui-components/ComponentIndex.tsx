@@ -18,7 +18,18 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, Input, Select } from 'antd';
+import {
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Table,
+  Tag,
+  Input,
+  Select,
+  ConfigProvider,
+  theme,
+} from 'antd';
 import {
   AppstoreOutlined,
   ApiOutlined,
@@ -26,6 +37,7 @@ import {
   PlayCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
+import { useColorMode } from '@docusaurus/theme-common';
 import type { ComponentData, ComponentEntry } from './types';
 
 interface ComponentIndexProps {
@@ -45,6 +57,8 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const ComponentIndex: React.FC<ComponentIndexProps> = ({ data }) => {
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === 'dark';
   const [searchText, setSearchText] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
@@ -52,7 +66,7 @@ const ComponentIndex: React.FC<ComponentIndexProps> = ({ data }) => {
 
   const filteredComponents = useMemo(() => {
     return components
-      .filter((comp) => {
+      .filter(comp => {
         const matchesSearch =
           !searchText ||
           comp.name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -67,7 +81,7 @@ const ComponentIndex: React.FC<ComponentIndexProps> = ({ data }) => {
 
   const { categories, categoryCounts } = useMemo(() => {
     const counts: Record<string, number> = {};
-    components.forEach((comp) => {
+    components.forEach(comp => {
       counts[comp.category] = (counts[comp.category] || 0) + 1;
     });
     return {
@@ -90,7 +104,12 @@ const ComponentIndex: React.FC<ComponentIndexProps> = ({ data }) => {
             <strong>{name}</strong>
           </a>
           {record.description && (
-            <div style={{ fontSize: '12px', color: '#666' }}>
+            <div
+              style={{
+                fontSize: '12px',
+                color: 'var(--ifm-color-secondary-darkest)',
+              }}
+            >
               {record.description.slice(0, 100)}
               {record.description.length > 100 ? '...' : ''}
             </div>
@@ -103,7 +122,7 @@ const ComponentIndex: React.FC<ComponentIndexProps> = ({ data }) => {
       dataIndex: 'category',
       key: 'category',
       width: 120,
-      filters: categories.map((cat) => ({
+      filters: categories.map(cat => ({
         text: CATEGORY_LABELS[cat] || cat,
         value: cat,
       })),
@@ -120,9 +139,7 @@ const ComponentIndex: React.FC<ComponentIndexProps> = ({ data }) => {
       dataIndex: 'package',
       key: 'package',
       width: 220,
-      render: (pkg: string) => (
-        <code style={{ fontSize: '12px' }}>{pkg}</code>
-      ),
+      render: (pkg: string) => <code style={{ fontSize: '12px' }}>{pkg}</code>,
     },
     {
       title: 'Tags',
@@ -163,99 +180,114 @@ const ComponentIndex: React.FC<ComponentIndexProps> = ({ data }) => {
       sorter: (a: ComponentEntry, b: ComponentEntry) =>
         a.propsCount - b.propsCount,
       render: (count: number) => (
-        <span style={{ color: count > 0 ? '#1890ff' : '#999' }}>{count}</span>
+        <span
+          style={{
+            color:
+              count > 0
+                ? 'var(--ifm-color-primary)'
+                : 'var(--ifm-color-secondary-darkest)',
+          }}
+        >
+          {count}
+        </span>
       ),
     },
   ];
 
   return (
-    <div className="component-index">
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic
-              title="Total Components"
-              value={statistics.totalComponents}
-              prefix={<AppstoreOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic
-              title="Extension Compatible"
-              value={statistics.extensionCompatible}
-              prefix={<ApiOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic
-              title="With Gallery"
-              value={statistics.withGallery}
-              prefix={<PictureOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic
-              title="With Live Demo"
-              value={statistics.withLiveExample}
-              prefix={<PlayCircleOutlined />}
-            />
-          </Card>
-        </Col>
-      </Row>
+    <ConfigProvider
+      theme={{
+        algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+      }}
+    >
+      <div className="component-index">
+        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+          <Col xs={12} sm={6}>
+            <Card>
+              <Statistic
+                title="Total Components"
+                value={statistics.totalComponents}
+                prefix={<AppstoreOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card>
+              <Statistic
+                title="Extension Compatible"
+                value={statistics.extensionCompatible}
+                prefix={<ApiOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card>
+              <Statistic
+                title="With Gallery"
+                value={statistics.withGallery}
+                prefix={<PictureOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card>
+              <Statistic
+                title="With Live Demo"
+                value={statistics.withLiveExample}
+                prefix={<PlayCircleOutlined />}
+              />
+            </Card>
+          </Col>
+        </Row>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={24} sm={12}>
-          <Input
-            placeholder="Search components..."
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            allowClear
-          />
-        </Col>
-        <Col xs={24} sm={12}>
-          <Select
-            placeholder="Filter by category"
-            style={{ width: '100%' }}
-            value={categoryFilter}
-            onChange={setCategoryFilter}
-            allowClear
-            options={categories.map((cat) => ({
-              label: (
-                <span>
-                  <Tag
-                    color={CATEGORY_COLORS[cat] || 'default'}
-                    style={{ marginRight: 8 }}
-                  >
-                    {categoryCounts[cat] || 0}
-                  </Tag>
-                  {CATEGORY_LABELS[cat] || cat}
-                </span>
-              ),
-              value: cat,
-            }))}
-          />
-        </Col>
-      </Row>
+        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12}>
+            <Input
+              placeholder="Search components..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={12}>
+            <Select
+              placeholder="Filter by category"
+              style={{ width: '100%' }}
+              value={categoryFilter}
+              onChange={setCategoryFilter}
+              allowClear
+              options={categories.map(cat => ({
+                label: (
+                  <span>
+                    <Tag
+                      color={CATEGORY_COLORS[cat] || 'default'}
+                      style={{ marginRight: 8 }}
+                    >
+                      {categoryCounts[cat] || 0}
+                    </Tag>
+                    {CATEGORY_LABELS[cat] || cat}
+                  </span>
+                ),
+                value: cat,
+              }))}
+            />
+          </Col>
+        </Row>
 
-      <Table
-        dataSource={filteredComponents}
-        columns={columns}
-        rowKey="name"
-        pagination={{
-          defaultPageSize: 20,
-          showSizeChanger: true,
-          showTotal: (total) => `${total} components`,
-        }}
-        size="middle"
-      />
-    </div>
+        <Table
+          dataSource={filteredComponents}
+          columns={columns}
+          rowKey="name"
+          pagination={{
+            defaultPageSize: 20,
+            showSizeChanger: true,
+            showTotal: total => `${total} components`,
+          }}
+          size="middle"
+        />
+      </div>
+    </ConfigProvider>
   );
 };
 
