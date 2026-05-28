@@ -12,9 +12,15 @@ Fix the cosmetic bug described in GitHub issue #{issue_number}.
 ## Instructions
 
 1. **Analyze the issue**: Read the description and any attached screenshots
-   carefully. Identify which UI component or page is affected.
+   carefully. Identify which UI component or page is affected. If there is one or more screenshots, 
+   make sure to analyze the screenshots closely to identify the actual issue being highlighted in the issue.
 
-2. **Locate the relevant code**: The Superset frontend is in
+1. **Create a stub PR**:
+   - Branch naming: `fix/cosmetic-issue-{issue_number}`
+   - PR title: `fix(ui): <concise description>` (Conventional Commits)
+   - Follow the PR template at `.github/PULL_REQUEST_TEMPLATE.md`
+
+1. **Locate the relevant code**: The Superset frontend is in
    `superset-frontend/src/`. Key areas:
    - `superset-frontend/src/components/` - Reusable UI components
    - `superset-frontend/src/dashboard/` - Dashboard views
@@ -24,34 +30,36 @@ Fix the cosmetic bug described in GitHub issue #{issue_number}.
    - `superset-frontend/packages/superset-ui-core/` - Core UI library
    Backend templates and views are in `superset/` (Flask/Jinja2).
 
-3. **Implement the fix**:
+1. **Implement the fix**:
    - Use TypeScript (.ts / .tsx) for frontend changes.
    - Prefer Ant Design theming tokens over custom CSS.
    - Import UI primitives from `@superset-ui/core`, not `antd` directly.
    - Avoid introducing `any` types.
    - Add ASF license headers to any new files.
 
-4. **Capture before/after screenshots**:
+1. **Capture before/after screenshots**:
    - Start the dev environment: `docker compose -f docker-compose-non-dev.yml up -d`
    - Wait for health: `curl -sf http://localhost:8088/health`
    - Use the screenshot helper at `.github/scripts/capture_screenshots.py`
      or take screenshots manually with Playwright.
-   - Capture a "before" screenshot on the main branch, apply the fix,
-     then capture an "after" screenshot.
+   - Capture a "before" screenshot on the main branch. Add this screenshot to the PR body of the stub PR we created above.
+   - Apply the fix.
+   - Then, capture an "after" screenshot. Add this screenshot to the PR body of the stub PR we created above.
+   - Analyze the "after" screenshot. Is there still anything wrong with the screenshot related to our issue? 
+   Only move on if you are sure the issue is resolved. Otherwise, make sure to fix the issue. 
 
-5. **Run validation**:
+1. **Run validation**:
    - `cd superset-frontend && npm run lint`
    - `cd superset-frontend && npm run test -- --findRelatedTests <changed files>`
    - `source venv/bin/activate && pre-commit run --all-files`
 
-6. **Create a PR**:
-   - Branch naming: `fix/cosmetic-issue-{issue_number}`
-   - PR title: `fix(ui): <concise description>` (Conventional Commits)
-   - PR body must include:
+1. **Update the PR you created above**:
+   - Push your commits to the branch we created above for the stub PR.
+   - Populate the PR body. It must include:
      - SUMMARY section explaining the fix
-     - BEFORE/AFTER SCREENSHOTS
+     - BEFORE/AFTER SCREENSHOTS.
      - TESTING INSTRUCTIONS
      - `Fixes #{issue_number}` to auto-close the issue
    - Follow the PR template at `.github/PULL_REQUEST_TEMPLATE.md`
 
-7. **Comment on the issue** with the PR link once it is opened.
+1. **Comment on the issue** with the PR link once it is opened.
