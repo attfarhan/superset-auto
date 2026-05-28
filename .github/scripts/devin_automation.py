@@ -23,7 +23,6 @@ constructs a prompt, and starts a Devin session to fix the bug.
 
 from __future__ import annotations
 
-import json
 import os
 import sys
 from pathlib import Path
@@ -44,16 +43,11 @@ def get_env(name: str) -> str:
     return value
 
 
-def validate_issue(
-    title: str, body: str, labels: list[str] | None = None
-) -> tuple[bool, str]:
+def validate_issue(title: str, body: str) -> tuple[bool, str]:
     """Check that the issue has enough information for an automated fix.
 
     Returns a tuple of (is_valid, reason).
     """
-    if labels and "bug:cosmetic" in labels:
-        return True, ""
-
     if not body or len(body.strip()) < 30:
         return False, "Issue description is too short for automated fixing."
 
@@ -185,11 +179,9 @@ def main() -> None:
     issue_body = os.environ.get("ISSUE_BODY", "")
     issue_url = get_env("ISSUE_URL")
     repo_full_name = get_env("REPO_FULL_NAME")
-    raw_labels = os.environ.get("ISSUE_LABELS", "[]")
-    issue_labels = [lbl["name"] for lbl in json.loads(raw_labels) if "name" in lbl]
 
     # Validate the issue
-    is_valid, reason = validate_issue(issue_title, issue_body, issue_labels)
+    is_valid, reason = validate_issue(issue_title, issue_body)
     if not is_valid:
         print(f"Skipping: {reason}")
         post_github_comment(

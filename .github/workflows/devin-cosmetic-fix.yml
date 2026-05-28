@@ -33,6 +33,5 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_URL: ${{ github.event.issue.html_url }}
-          ISSUE_LABELS: ${{ toJson(github.event.issue.labels) }}
           REPO_FULL_NAME: ${{ github.repository }}
         run: python .github/scripts/devin_automation.py
