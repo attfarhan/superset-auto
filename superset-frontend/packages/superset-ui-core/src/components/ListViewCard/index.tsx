@@ -48,6 +48,11 @@ const StyledCard = styled(Card)`
         transform: translateY(0);
       }
     }
+    .ant-card-meta-description {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   `}
 `;
 
@@ -258,7 +263,11 @@ function ListViewCard({
               </div>
             </TitleContainer>
           }
-          description={description}
+          description={
+            <Tooltip title={description}>
+              <span>{description}</span>
+            </Tooltip>
+          }
           avatar={avatar || null}
         />
       )}
