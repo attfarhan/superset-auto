@@ -54,6 +54,7 @@ export const PermissionsField = ({
         fetchPermissionOptions(filterValue, page, pageSize, addDangerToast)
       }
       loading={loading}
+      popupMatchSelectWidth={false}
       getPopupContainer={trigger => trigger.closest('.ant-modal-content')}
       data-test="permissions-select"
     />
