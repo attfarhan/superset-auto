@@ -40,6 +40,9 @@ const StyledCard = styled(Card)`
       position: relative;
       height: 100%;
     }
+    .ant-card-meta-description {
+      overflow: hidden;
+    }
     &:hover {
       box-shadow: ${theme.boxShadow};
       transition: box-shadow ${theme.motionDurationSlow} ease-in-out;
@@ -92,16 +95,29 @@ const TitleLink = styled.span`
   }
 `;
 
+const DescriptionWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  min-width: 0;
+`;
+
+const DescriptionText = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+`;
+
 const TitleRight = styled.span`
   ${({ theme }) => css`
-    position: absolute;
     font-weight: 400;
-    bottom: ${theme.sizeUnit * 3}px;
-    right: ${theme.sizeUnit * 2}px;
+    margin-left: ${theme.sizeUnit * 2}px;
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    flex-shrink: 0;
   `}
 `;
 const CoverFooter = styled.div`
@@ -247,18 +263,24 @@ function ListViewCard({
                     {title}
                   </TitleLink>
                 </Tooltip>
-                {titleRight && (
-                  <Tooltip title={titleRight}>
-                    <TitleRight>{titleRight}</TitleRight>
-                  </Tooltip>
-                )}
                 <div className="card-actions" data-test="card-actions">
                   {actions}
                 </div>
               </div>
             </TitleContainer>
           }
-          description={description}
+          description={
+            <DescriptionWrapper>
+              <Tooltip title={description}>
+                <DescriptionText>{description}</DescriptionText>
+              </Tooltip>
+              {titleRight && (
+                <Tooltip title={titleRight}>
+                  <TitleRight>{titleRight}</TitleRight>
+                </Tooltip>
+              )}
+            </DescriptionWrapper>
+          }
           avatar={avatar || null}
         />
       )}
