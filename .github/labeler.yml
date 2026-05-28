@@ -166,8 +166,16 @@
   - any-glob-to-any-file:
     - 'superset-embedded-sdk/**'
 
+"bug:cosmetic":
+- changed-files:
+  - any-glob-to-any-file:
+    - 'superset-frontend/src/**/*.css'
+    - 'superset-frontend/src/**/*.less'
+    - 'superset-frontend/src/**/*.scss'
+
 "github_actions":
 - changed-files:
   - any-glob-to-any-file:
     - '.github/actions/**'
     - '.github/workflows/**'
+    - '.github/scripts/**'
