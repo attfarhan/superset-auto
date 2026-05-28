@@ -40,6 +40,11 @@ const StyledCard = styled(Card)`
       position: relative;
       height: 100%;
     }
+    .ant-card-meta-description {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     &:hover {
       box-shadow: ${theme.boxShadow};
       transition: box-shadow ${theme.motionDurationSlow} ease-in-out;
@@ -258,7 +263,11 @@ function ListViewCard({
               </div>
             </TitleContainer>
           }
-          description={description}
+          description={
+            <Tooltip title={description}>
+              <span>{description}</span>
+            </Tooltip>
+          }
           avatar={avatar || null}
         />
       )}
