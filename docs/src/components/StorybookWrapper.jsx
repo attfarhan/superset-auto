@@ -19,10 +19,11 @@
 
 import React from 'react';
 import BrowserOnly from '@docusaurus/BrowserOnly';
+import { useColorMode } from '@docusaurus/theme-common';
 
 // Lazy-loaded component registry - populated on first use in browser
 let componentRegistry = null;
-let SupersetProviders = null;
+let cachedProviders = null;
 
 function getComponentRegistry() {
   if (typeof window === 'undefined') {
@@ -59,15 +60,15 @@ function getProviders() {
     return ({ children }) => children; // SSR
   }
 
-  if (SupersetProviders !== null) {
-    return SupersetProviders;
+  if (cachedProviders !== null) {
+    return cachedProviders;
   }
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { themeObject } = require('@apache-superset/core/theme');
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { App, ConfigProvider } = require('antd');
+    const { App, ConfigProvider, theme } = require('antd');
 
     // Configure Ant Design to render portals (tooltips, dropdowns, etc.)
     // inside the closest .storybook-example container instead of document.body
@@ -78,20 +79,24 @@ function getProviders() {
       return container || document.body;
     };
 
-    SupersetProviders = ({ children }) => (
+    cachedProviders = ({ children, isDark }) => (
       <themeObject.SupersetThemeProvider>
         <ConfigProvider
           getPopupContainer={getPopupContainer}
           getTargetContainer={() => document.body}
+          theme={{
+            algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+          }}
         >
           <App>{children}</App>
         </ConfigProvider>
       </themeObject.SupersetThemeProvider>
     );
-    return SupersetProviders;
+    return cachedProviders;
   } catch (error) {
     console.error('[StorybookWrapper] Failed to load providers:', error);
-    return ({ children }) => children;
+    cachedProviders = ({ children }) => children;
+    return cachedProviders;
   }
 }
 
@@ -151,6 +156,8 @@ function LoadingPlaceholder() {
 
 // A simple component to display a story example
 export function StoryExample({ component, props = {} }) {
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === 'dark';
   return (
     <BrowserOnly fallback={<LoadingPlaceholder />}>
       {() => {
@@ -158,11 +165,11 @@ export function StoryExample({ component, props = {} }) {
         const Providers = getProviders();
         const { children, restProps } = extractChildren(props);
         return (
-          <Providers>
+          <Providers isDark={isDark}>
             <div
               className="storybook-example"
               style={{
-                border: '1px solid #e8e8e8',
+                border: `1px solid ${isDark ? '#424242' : '#e8e8e8'}`,
                 borderRadius: '4px',
                 padding: '20px',
                 marginBottom: '20px',
@@ -252,7 +259,7 @@ function generateSampleChildren(sampleChildren, sampleChildrenStyle) {
 // renderComponent allows overriding which component to actually render (useful when the named
 // component is a namespace object like Icons, not a React component)
 // triggerProp: for components like Modal that need a trigger, specify the boolean prop that controls visibility
-function StoryWithControlsInner({ component, renderComponent, props, controls, sampleChildren, sampleChildrenStyle, triggerProp, onHideProp }) {
+function StoryWithControlsInner({ component, renderComponent, props, controls, sampleChildren, sampleChildrenStyle, triggerProp, onHideProp, isDark }) {
   // Use renderComponent if provided, otherwise use the main component name
   const componentToRender = renderComponent || component;
   const Component = resolveComponent(componentToRender);
@@ -335,13 +342,15 @@ function StoryWithControlsInner({ component, renderComponent, props, controls, s
   // Get the Button component for trigger buttons
   const ButtonComponent = resolveComponent('Button');
 
+  const borderColor = isDark ? '#424242' : '#e8e8e8';
+
   return (
-    <Providers>
+    <Providers isDark={isDark}>
       <div className="storybook-with-controls">
         <div
           className="storybook-example"
           style={{
-            border: '1px solid #e8e8e8',
+            border: `1px solid ${borderColor}`,
             borderRadius: '4px',
             padding: '20px',
             marginBottom: '20px',
@@ -369,7 +378,7 @@ function StoryWithControlsInner({ component, renderComponent, props, controls, s
           <div
             className="storybook-controls"
             style={{
-              border: '1px solid #e8e8e8',
+              border: `1px solid ${borderColor}`,
               borderRadius: '4px',
               padding: '20px',
               marginBottom: '20px',
@@ -458,6 +467,8 @@ function StoryWithControlsInner({ component, renderComponent, props, controls, s
 // renderComponent: optional override for which component to render (e.g., 'Icons.InfoCircleOutlined' when component='Icons')
 // triggerProp/onHideProp: for components like Modal that need a button to open (e.g., triggerProp="show", onHideProp="onHide")
 export function StoryWithControls({ component: Component, renderComponent, props = {}, controls = [], sampleChildren, sampleChildrenStyle, triggerProp, onHideProp }) {
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === 'dark';
   return (
     <BrowserOnly fallback={<LoadingPlaceholder />}>
       {() => (
@@ -470,6 +481,7 @@ export function StoryWithControls({ component: Component, renderComponent, props
           sampleChildrenStyle={sampleChildrenStyle}
           triggerProp={triggerProp}
           onHideProp={onHideProp}
+          isDark={isDark}
         />
       )}
     </BrowserOnly>
@@ -477,7 +489,7 @@ export function StoryWithControls({ component: Component, renderComponent, props
 }
 
 // Inner component for ComponentGallery (browser-only)
-function ComponentGalleryInner({ component, sizes, styles, sizeProp, styleProp }) {
+function ComponentGalleryInner({ component, sizes, styles, sizeProp, styleProp, isDark }) {
   const Component = resolveComponent(component);
   const Providers = getProviders();
 
@@ -490,11 +502,11 @@ function ComponentGalleryInner({ component, sizes, styles, sizeProp, styleProp }
   }
 
   return (
-    <Providers>
+    <Providers isDark={isDark}>
       <div className="component-gallery">
         {sizes.map(size => (
           <div key={size} style={{ marginBottom: 40 }}>
-            <h4 style={{ marginBottom: 16, color: '#666' }}>{size}</h4>
+            <h4 style={{ marginBottom: 16, color: isDark ? '#a0a0a0' : '#666' }}>{size}</h4>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
               {styles.map(style => (
                 <Component
@@ -514,6 +526,8 @@ function ComponentGalleryInner({ component, sizes, styles, sizeProp, styleProp }
 
 // A component to display a gallery of all variants (sizes x styles)
 export function ComponentGallery({ component, sizes = [], styles = [], sizeProp = 'size', styleProp = 'variant' }) {
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === 'dark';
   return (
     <BrowserOnly fallback={<LoadingPlaceholder />}>
       {() => (
@@ -523,6 +537,7 @@ export function ComponentGallery({ component, sizes = [], styles = [], sizeProp 
           styles={styles}
           sizeProp={sizeProp}
           styleProp={styleProp}
+          isDark={isDark}
         />
       )}
     </BrowserOnly>
